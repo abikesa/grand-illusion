@@ -1,115 +1,276 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>🎭 Grande Illusion Dashboard</title>
-    <style>
-        body {
-            background: #111;
-            color: #eee;
-            font-family: sans-serif;
-            transition: background 0.5s, color 0.5s;
-        }
-        h1 { color: #ff4081; }
-        .layer {
-            margin: 20px;
-            padding: 15px;
-            background: #222;
-            border-left: 5px solid #ff4081;
-        }
-        .quote-box {
-            margin: 20px;
-            padding: 10px;
-            background: #333;
-            font-style: italic;
-            border-left: 4px solid #ccc;
-        }
-        button {
-            margin: 10px;
-            padding: 8px 12px;
-            background: #555;
-            color: #eee;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #777;
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="/static/script.js"></script>
+  <meta charset="UTF-8" />
+  <title>🎭 Grande Illusion Dashboard – Interactive</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: sans-serif;
+      background: #111;
+      color: #eee;
+      transition: background 0.6s ease, color 0.6s ease;
+      background: radial-gradient(circle at center, #111 0%, #000 100%);
+      animation: breathe 10s ease-in-out infinite alternate;
+    }
+
+    @keyframes breathe {
+      0% { background: radial-gradient(circle at center, #111 0%, #000 100%); }
+      100% { background: radial-gradient(circle at center, #222 0%, #111 100%); }
+    }
+
+    h1 { color: #ff4081; }
+
+    .layer {
+      margin: 20px 0;
+      padding: 15px;
+      background: #222;
+      border-left: 5px solid #ff4081;
+    }
+
+    .quote-box {
+      margin: 20px 0;
+      padding: 10px;
+      background: #333;
+      font-style: italic;
+      border-left: 4px solid #ccc;
+      transition: background 0.4s;
+    }
+
+    button {
+      margin: 5px;
+      padding: 8px 12px;
+      background: #555;
+      color: #eee;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.3s;
+    }
+
+    button:hover { background: #777; }
+
+    .chart-section {
+      margin: 20px 0;
+      padding: 15px;
+      background: #222;
+      border-left: 5px solid #4CAF50;
+    }
+
+    canvas {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    #status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      background: #333;
+    }
+
+    .success { color: #4CAF50; }
+    .error { color: #f44336; }
+    .warning { color: #ff9800; }
+
+    .slider-section {
+      margin: 20px 0;
+      padding: 15px;
+      background: #222;
+      border-left: 5px solid #4CAF50;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 4px;
+    }
+
+    input[type=range] {
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
-    <h1>🎭 The Grande Illusion</h1>
+  <h1>🎭 The Grande Illusion</h1>
 
-    <div class="quote-box">
-        <p id="quoteText">Hover or click for wisdom 🧠</p>
-        <button onclick="nextQuote()">Next Quote</button>
-        <button onclick="toggleTheme()">Toggle Theme</button>
-    </div>
+  <div class="quote-box">
+    <p id="quoteText">Hover or click for wisdom 🧠</p>
+    <button onclick="nextQuote()">Next Quote</button>
+    <button onclick="toggleTheme()">Toggle Theme</button>
+  </div>
 
-    {% for item in stack %}
-    <div class="layer">
-        <h2>{{ item.layer }} {{ item.file }}</h2>
-        <p><strong>{{ item.concept }}</strong>: {{ item.description }}</p>
-    </div>
-    {% endfor %}
+  <div class="layer">
+    <h2>🌊 CSV data/raw_data.csv</h2>
+    <p><strong>Renoir</strong>: Raw empirical impressions of the world.</p>
+  </div>
+  <div class="layer">
+    <h2>❤️ Python engine/process.py</h2>
+    <p><strong>Règle</strong>: Logic and causality; structure of application behavior.</p>
+  </div>
+  <div class="layer">
+    <h2>🔁 Jinja templates/other.html</h2>
+    <p><strong>Du Jeu</strong>: The illusion of interface freedom; conditional rendering.</p>
+  </div>
+  <div class="layer">
+    <h2>🎭 HTML templates/dashboard.html</h2>
+    <p><strong>Grande</strong>: The UI mask; surface of perceived agency.</p>
+  </div>
+  <div class="layer">
+    <h2>📡 YAML render.yaml</h2>
+    <p><strong>Illusion</strong>: Invisible configuration schema powering everything.</p>
+  </div>
 
-    <canvas id="illusionChart" width="600" height="200"></canvas>
+  <div class="slider-section">
+    <h2>🛠️ Adjust Distortion per Layer</h2>
+    <div id="sliders"></div>
+  </div>
 
-    <script>
-        const quotes = {{ quotes|tojson }};
-        let index = 0;
-        const quoteEl = document.getElementById('quoteText');
+  <div class="chart-section">
+    <h2>📊 The Illusion Visualization</h2>
+    <div id="status" class="warning">🔄 Creating chart...</div>
+    <canvas id="illusionChart" width="800" height="400"></canvas>
+  </div>
 
-        function nextQuote() {
-            index = (index + 1) % quotes.length;
-            quoteEl.textContent = quotes[index];
+  <script>
+    const chime = new Audio("data:audio/mp3;base64,//uQx...");
+    const toggleSound = new Audio("data:audio/mp3;base64,//uQx...");
+
+    const quotes = [
+      "You may imagine the universe, but you cannot grasp it. – Jean Renoir",
+      "Il n'y a pas de hors-texte. – Jacques Derrida",
+      "Power is everywhere… – Michel Foucault",
+      "Free will is biology's illusion. – Robert Sapolsky",
+      "Time is how you spend your love. – Zadie Smith",
+      "The simulacrum is never that which conceals the truth—it is the truth which conceals that there is none. – Baudrillard"
+    ];
+    let seenQuotes = new Set();
+    const quoteEl = document.getElementById('quoteText');
+
+    function nextQuote() {
+      chime.play();
+      if (seenQuotes.size === quotes.length) seenQuotes.clear();
+      let next;
+      do {
+        next = Math.floor(Math.random() * quotes.length);
+      } while (seenQuotes.has(next));
+      seenQuotes.add(next);
+      quoteEl.textContent = quotes[next];
+    }
+
+    quoteEl.addEventListener('mouseover', nextQuote);
+
+    function toggleTheme() {
+      toggleSound.play();
+      const dark = document.body.style.background.includes('#111') || !document.body.style.background;
+      document.body.style.background = dark ? '#f8f8f8' : '#111';
+      document.body.style.color = dark ? '#111' : '#eee';
+    }
+
+    const layers = ['Reality', 'Perception', 'Memory', 'Narrative', 'Truth', 'Illusion'];
+    let distortion = Array(layers.length).fill(0);
+
+    const slidersDiv = document.getElementById('sliders');
+    layers.forEach((layer, i) => {
+      const label = document.createElement('label');
+      label.textContent = `${layer} Distortion: 0%`;
+      const input = document.createElement('input');
+      input.type = 'range';
+      input.min = 0;
+      input.max = 100;
+      input.value = 0;
+      input.addEventListener('input', () => {
+        distortion[i] = parseInt(input.value);
+        label.textContent = `${layer} Distortion: ${input.value}%`;
+        updateChart();
+      });
+      slidersDiv.appendChild(label);
+      slidersDiv.appendChild(input);
+    });
+
+    const ctx = document.getElementById('illusionChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: layers,
+        datasets: [
+          {
+            label: 'Certainty Level (%)',
+            data: [],
+            borderColor: '#ff4081',
+            backgroundColor: 'rgba(255, 64, 129, 0.1)',
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: 'Confidence in Understanding (%)',
+            data: [],
+            borderColor: '#4CAF50',
+            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+            tension: 0.4,
+            fill: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'The Grande Illusion: Reality vs Perception',
+            color: '#eee',
+            font: { size: 16 }
+          },
+          legend: {
+            labels: { color: '#eee', font: { size: 12 } }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Layers of Experience', color: '#eee' },
+            ticks: { color: '#eee' },
+            grid: { color: '#333' }
+          },
+          y: {
+            title: { display: true, text: 'Percentage (%)', color: '#eee' },
+            ticks: { color: '#eee' },
+            grid: { color: '#333' },
+            min: 0,
+            max: 100
+          }
         }
+      }
+    });
 
-        quoteEl.addEventListener('mouseover', () => {
-            nextQuote();
-        });
+    function updateChart() {
+      const certainty = [];
+      const confidence = [];
+      let cumulativeDistortion = 0;
 
-        function toggleTheme() {
-            const isDark = document.body.style.background === 'rgb(17, 17, 17)';
-            document.body.style.background = isDark ? '#fff' : '#111';
-            document.body.style.color = isDark ? '#111' : '#eee';
-        }
+      for (let i = 0; i < distortion.length; i++) {
+        cumulativeDistortion += distortion[i];
+        const certaintyVal = Math.max(0, 100 - cumulativeDistortion);
+        const confidenceVal = Math.min(100, distortion[i] * 1.5 + 20);
+        certainty.push(certaintyVal);
+        confidence.push(confidenceVal);
+      }
 
-        fetch('/static/data/formatted.csv')
-          .then(response => response.text())
-          .then(data => {
-            const lines = data.trim().split('\n').slice(1);
-            const labels = lines.map(l => l.split(',')[0]);
-            const values = lines.map(l => +l.split(',')[2]);
-            const ctx = document.getElementById('illusionChart').getContext('2d');
-            new Chart(ctx, {
-              type: 'line',
-              data: {
-                labels: labels,
-                datasets: [{
-                  label: 'Perceived Interaction Value',
-                  data: values,
-                  borderColor: '#ff4081',
-                  borderWidth: 2,
-                  fill: false
-                }]
-              },
-              options: {
-                responsive: true,
-                scales: {
-                  y: {
-                    beginAtZero: true
-                  }
-                }
-              }
-            });
-          });
+      chart.data.datasets[0].data = certainty;
+      chart.data.datasets[1].data = confidence;
+      chart.update();
 
-        // Placeholder for live reload (AJAX polling or Flask-SocketIO)
-        setInterval(() => {
-            // Future: fetch updated CSV, update chart
-        }, 60000);
-    </script>
+      const status = document.getElementById('status');
+      status.textContent = '✅ Visualization updated dynamically!';
+      status.className = 'success';
+    }
+
+    updateChart();
+  </script>
 </body>
 </html>

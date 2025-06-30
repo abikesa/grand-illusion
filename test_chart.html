@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chart.js Test</title>
+    <style>
+        body {
+            background: #111;
+            color: #eee;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success { background: #2d5a2d; }
+        .error { background: #5a2d2d; }
+        .warning { background: #5a5a2d; }
+        canvas {
+            margin: 20px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Chart.js Test Page</h1>
+    
+    <div id="status1" class="status warning">🔄 Loading Chart.js from local file...</div>
+    <div id="status2" class="status warning">🔄 Checking Chart.js availability...</div>
+    <div id="status3" class="status warning">🔄 Attempting to create chart...</div>
+    
+    <canvas id="testChart" width="400" height="200"></canvas>
+    
+    <div class="status">
+        <h3>Debug Info:</h3>
+        <div id="debugInfo">Loading...</div>
+    </div>
+
+    <!-- Try local Chart.js first -->
+    <script>
+        // Debug function
+        function updateDebug() {
+            const debug = document.getElementById('debugInfo');
+            debug.innerHTML = `
+                <strong>Chart object:</strong> ${typeof Chart}<br>
+                <strong>Chart.VERSION:</strong> ${typeof Chart !== 'undefined' ? Chart.version || 'unknown' : 'N/A'}<br>
+                <strong>User Agent:</strong> ${navigator.userAgent}<br>
+                <strong>Location:</strong> ${window.location.href}
+            `;
+        }
+
+        // Status update functions
+        function updateStatus(id, message, type) {
+            const el = document.getElementById(id);
+            el.textContent = message;
+            el.className = `status ${type}`;
+        }
+
+        // Chart creation function
+        function createTestChart() {
+            updateStatus('status3', '🎨 Creating test chart...', 'warning');
+            
+            try {
+                const ctx = document.getElementById('testChart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Test 1', 'Test 2', 'Test 3', 'Test 4', 'Test 5'],
+                        datasets: [{
+                            label: 'Test Data',
+                            data: [10, 20, 15, 25, 30],
+                            borderColor: '#ff4081',
+                            backgroundColor: 'rgba(255, 64, 129, 0.2)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                labels: { color: '#eee' }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: '#eee' },
+                                grid: { color: '#333' }
+                            },
+                            y: {
+                                ticks: { color: '#eee' },
+                                grid: { color: '#333' }
+                            }
+                        }
+                    }
+                });
+                
+                updateStatus('status3', '✅ Chart created successfully!', 'success');
+                updateDebug();
+                
+            } catch (error) {
+                updateStatus('status3', `❌ Chart creation failed: ${error.message}`, 'error');
+                console.error('Chart creation error:', error);
+            }
+        }
+
+        // Check Chart.js availability
+        function checkChart() {
+            updateStatus('status2', '🔍 Checking Chart.js...', 'warning');
+            
+            if (typeof Chart !== 'undefined') {
+                updateStatus('status2', '✅ Chart.js is available!', 'success');
+                createTestChart();
+            } else {
+                updateStatus('status2', '❌ Chart.js not found, trying CDN...', 'error');
+                loadFromCDN();
+            }
+        }
+
+        // Load from CDN as fallback
+        function loadFromCDN() {
+            updateStatus('status1', '🌐 Loading Chart.js from CDN...', 'warning');
+            
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js';
+            script.onload = function() {
+                updateStatus('status1', '✅ Chart.js loaded from CDN!', 'success');
+                checkChart();
+            };
+            script.onerror = function() {
+                updateStatus('status1', '❌ Failed to load Chart.js from CDN', 'error');
+                updateStatus('status2', '❌ No Chart.js available', 'error');
+                updateStatus('status3', '❌ Cannot create chart', 'error');
+            };
+            document.head.appendChild(script);
+        }
+
+        // Initial load attempt
+        window.addEventListener('load', function() {
+            // Try to load local chart.js
+            const script = document.createElement('script');
+            script.src = '/static/chart.js';
+            script.onload = function() {
+                updateStatus('status1', '✅ Chart.js loaded from local file!', 'success');
+                setTimeout(checkChart, 100);
+            };
+            script.onerror = function() {
+                updateStatus('status1', '❌ Failed to load local Chart.js', 'error');
+                loadFromCDN();
+            };
+            document.head.appendChild(script);
+            
+            updateDebug();
+        });
+    </script>
+</body>
+</html>
