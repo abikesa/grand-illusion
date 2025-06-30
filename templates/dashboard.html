@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>🎭 Grande Illusion Dashboard</title>
+  <title>🎭 Grande Illusion Dashboard – Interactive</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
@@ -50,9 +50,7 @@
       transition: background 0.3s;
     }
 
-    button:hover {
-      background: #777;
-    }
+    button:hover { background: #777; }
 
     .chart-section {
       margin: 20px 0;
@@ -77,6 +75,22 @@
     .success { color: #4CAF50; }
     .error { color: #f44336; }
     .warning { color: #ff9800; }
+
+    .slider-section {
+      margin: 20px 0;
+      padding: 15px;
+      background: #222;
+      border-left: 5px solid #4CAF50;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 4px;
+    }
+
+    input[type=range] {
+      width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -92,25 +106,26 @@
     <h2>🌊 CSV data/raw_data.csv</h2>
     <p><strong>Renoir</strong>: Raw empirical impressions of the world.</p>
   </div>
-
   <div class="layer">
     <h2>❤️ Python engine/process.py</h2>
     <p><strong>Règle</strong>: Logic and causality; structure of application behavior.</p>
   </div>
-
   <div class="layer">
     <h2>🔁 Jinja templates/other.html</h2>
     <p><strong>Du Jeu</strong>: The illusion of interface freedom; conditional rendering.</p>
   </div>
-
   <div class="layer">
     <h2>🎭 HTML templates/dashboard.html</h2>
     <p><strong>Grande</strong>: The UI mask; surface of perceived agency.</p>
   </div>
-
   <div class="layer">
     <h2>📡 YAML render.yaml</h2>
     <p><strong>Illusion</strong>: Invisible configuration schema powering everything.</p>
+  </div>
+
+  <div class="slider-section">
+    <h2>🛠️ Adjust Distortion per Layer</h2>
+    <div id="sliders"></div>
   </div>
 
   <div class="chart-section">
@@ -120,11 +135,9 @@
   </div>
 
   <script>
-    // 🎵 Sound Effects (base64 chime & toggle)
     const chime = new Audio("data:audio/mp3;base64,//uQx...");
     const toggleSound = new Audio("data:audio/mp3;base64,//uQx...");
 
-    // 🌀 Quote logic
     const quotes = [
       "You may imagine the universe, but you cannot grasp it. – Jean Renoir",
       "Il n'y a pas de hors-texte. – Jacques Derrida",
@@ -149,7 +162,6 @@
 
     quoteEl.addEventListener('mouseover', nextQuote);
 
-    // 🌗 Theme toggle
     function toggleTheme() {
       toggleSound.play();
       const dark = document.body.style.background.includes('#111') || !document.body.style.background;
@@ -157,95 +169,108 @@
       document.body.style.color = dark ? '#111' : '#eee';
     }
 
-    // 📊 Chart
-    function updateStatus(message, type = 'warning') {
-      const status = document.getElementById('status');
-      status.textContent = message;
-      status.className = type;
-    }
+    const layers = ['Reality', 'Perception', 'Memory', 'Narrative', 'Truth', 'Illusion'];
+    let distortion = Array(layers.length).fill(0);
 
-    function createChart() {
-      updateStatus('🎨 Creating visualization...', 'warning');
-      try {
-        const ctx = document.getElementById('illusionChart').getContext('2d');
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: ['Reality', 'Perception', 'Memory', 'Narrative', 'Truth', 'Illusion'],
-            datasets: [{
-              label: 'Certainty Level (%)',
-              data: [100, 85, 70, 50, 30, 10],
-              borderColor: '#ff4081',
-              backgroundColor: 'rgba(255, 64, 129, 0.1)',
-              tension: 0.4,
-              pointBackgroundColor: '#ff4081',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 2,
-              pointRadius: 6
-            }, {
-              label: 'Confidence in Understanding (%)',
-              data: [20, 40, 60, 80, 90, 95],
-              borderColor: '#4CAF50',
-              backgroundColor: 'rgba(76, 175, 80, 0.1)',
-              tension: 0.4,
-              pointBackgroundColor: '#4CAF50',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 2,
-              pointRadius: 6
-            }]
+    const slidersDiv = document.getElementById('sliders');
+    layers.forEach((layer, i) => {
+      const label = document.createElement('label');
+      label.textContent = `${layer} Distortion: 0%`;
+      const input = document.createElement('input');
+      input.type = 'range';
+      input.min = 0;
+      input.max = 100;
+      input.value = 0;
+      input.addEventListener('input', () => {
+        distortion[i] = parseInt(input.value);
+        label.textContent = `${layer} Distortion: ${input.value}%`;
+        updateChart();
+      });
+      slidersDiv.appendChild(label);
+      slidersDiv.appendChild(input);
+    });
+
+    const ctx = document.getElementById('illusionChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: layers,
+        datasets: [
+          {
+            label: 'Certainty Level (%)',
+            data: [],
+            borderColor: '#ff4081',
+            backgroundColor: 'rgba(255, 64, 129, 0.1)',
+            tension: 0.4,
+            fill: true
           },
-          options: {
-            responsive: true,
-            interaction: {
-              intersect: false,
-              mode: 'index'
-            },
-            plugins: {
-              title: {
-                display: true,
-                text: 'The Grande Illusion: Reality vs Perception',
-                color: '#eee',
-                font: { size: 16 }
-              },
-              legend: {
-                labels: {
-                  color: '#eee',
-                  font: { size: 12 }
-                }
-              }
-            },
-            scales: {
-              x: {
-                title: {
-                  display: true,
-                  text: 'Layers of Experience',
-                  color: '#eee'
-                },
-                ticks: { color: '#eee' },
-                grid: { color: '#333' }
-              },
-              y: {
-                title: {
-                  display: true,
-                  text: 'Percentage (%)',
-                  color: '#eee'
-                },
-                ticks: { color: '#eee' },
-                grid: { color: '#333' },
-                min: 0,
-                max: 100
-              }
-            }
+          {
+            label: 'Confidence in Understanding (%)',
+            data: [],
+            borderColor: '#4CAF50',
+            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+            tension: 0.4,
+            fill: true
           }
-        });
-        updateStatus('✅ Visualization created successfully!', 'success');
-      } catch (err) {
-        updateStatus(`❌ Chart creation failed: ${err.message}`, 'error');
-        console.error(err);
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'The Grande Illusion: Reality vs Perception',
+            color: '#eee',
+            font: { size: 16 }
+          },
+          legend: {
+            labels: { color: '#eee', font: { size: 12 } }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Layers of Experience', color: '#eee' },
+            ticks: { color: '#eee' },
+            grid: { color: '#333' }
+          },
+          y: {
+            title: { display: true, text: 'Percentage (%)', color: '#eee' },
+            ticks: { color: '#eee' },
+            grid: { color: '#333' },
+            min: 0,
+            max: 100
+          }
+        }
       }
+    });
+
+    function updateChart() {
+      const certainty = [];
+      const confidence = [];
+      let cumulativeDistortion = 0;
+
+      for (let i = 0; i < distortion.length; i++) {
+        cumulativeDistortion += distortion[i];
+        const certaintyVal = Math.max(0, 100 - cumulativeDistortion);
+        const confidenceVal = Math.min(100, distortion[i] * 1.5 + 20);
+        certainty.push(certaintyVal);
+        confidence.push(confidenceVal);
+      }
+
+      chart.data.datasets[0].data = certainty;
+      chart.data.datasets[1].data = confidence;
+      chart.update();
+
+      const status = document.getElementById('status');
+      status.textContent = '✅ Visualization updated dynamically!';
+      status.className = 'success';
     }
 
-    window.addEventListener('load', createChart);
+    updateChart();
   </script>
 </body>
 </html>
