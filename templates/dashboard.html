@@ -7,109 +7,260 @@
             background: #111;
             color: #eee;
             font-family: sans-serif;
-            transition: background 0.5s, color 0.5s;
+            margin: 20px;
         }
         h1 { color: #ff4081; }
         .layer {
-            margin: 20px;
+            margin: 20px 0;
             padding: 15px;
             background: #222;
             border-left: 5px solid #ff4081;
         }
         .quote-box {
-            margin: 20px;
+            margin: 20px 0;
             padding: 10px;
             background: #333;
             font-style: italic;
             border-left: 4px solid #ccc;
         }
         button {
-            margin: 10px;
+            margin: 5px;
             padding: 8px 12px;
             background: #555;
             color: #eee;
             border: none;
             cursor: pointer;
+            border-radius: 4px;
         }
-        button:hover {
-            background: #777;
+        button:hover { background: #777; }
+        .chart-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #222;
+            border-left: 5px solid #4CAF50;
         }
+        canvas {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        #status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #333;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="/static/script.js"></script>
 </head>
 <body>
     <h1>🎭 The Grande Illusion</h1>
-
+    
     <div class="quote-box">
         <p id="quoteText">Hover or click for wisdom 🧠</p>
         <button onclick="nextQuote()">Next Quote</button>
         <button onclick="toggleTheme()">Toggle Theme</button>
     </div>
-
-    {% for item in stack %}
+    
     <div class="layer">
-        <h2>{{ item.layer }} {{ item.file }}</h2>
-        <p><strong>{{ item.concept }}</strong>: {{ item.description }}</p>
+        <h2>🌊 CSV data/raw_data.csv</h2>
+        <p><strong>Renoir</strong>: Raw empirical impressions of the world.</p>
     </div>
-    {% endfor %}
-
-    <canvas id="illusionChart" width="600" height="200"></canvas>
+    
+    <div class="layer">
+        <h2>❤️ Python engine/process.py</h2>
+        <p><strong>Règle</strong>: Logic and causality; structure of application behavior.</p>
+    </div>
+    
+    <div class="layer">
+        <h2>🔁 Jinja templates/other.html</h2>
+        <p><strong>Du Jeu</strong>: The illusion of interface freedom; conditional rendering.</p>
+    </div>
+    
+    <div class="layer">
+        <h2>🎭 HTML templates/dashboard.html</h2>
+        <p><strong>Grande</strong>: The UI mask; surface of perceived agency.</p>
+    </div>
+    
+    <div class="layer">
+        <h2>📡 YAML render.yaml</h2>
+        <p><strong>Illusion</strong>: Invisible configuration schema powering everything.</p>
+    </div>
+    
+    <div class="chart-section">
+        <h2>📊 The Illusion Visualization</h2>
+        <div id="status" class="warning">🔄 Loading Chart.js...</div>
+        <canvas id="illusionChart" width="800" height="400"></canvas>
+    </div>
 
     <script>
-        const quotes = {{ quotes|tojson }};
-        let index = 0;
+        // Quotes functionality
+        const quotes = [
+            "You may imagine the universe, but you cannot grasp it. – Jean Renoir", 
+            "Il n'y a pas de hors-texte. – Jacques Derrida", 
+            "Power is everywhere… – Michel Foucault", 
+            "Free will is biology's illusion. – Robert Sapolsky", 
+            "Time is how you spend your love. – Zadie Smith", 
+            "The simulacrum is never that which conceals the truth—it is the truth which conceals that there is none. – Baudrillard"
+        ];
+        
+        let quoteIndex = 0;
         const quoteEl = document.getElementById('quoteText');
-
+        
         function nextQuote() {
-            index = (index + 1) % quotes.length;
-            quoteEl.textContent = quotes[index];
+            quoteIndex = (quoteIndex + 1) % quotes.length;
+            quoteEl.textContent = quotes[quoteIndex];
         }
-
-        quoteEl.addEventListener('mouseover', () => {
-            nextQuote();
-        });
-
+        
+        quoteEl.addEventListener('mouseover', nextQuote);
+        
         function toggleTheme() {
-            const isDark = document.body.style.background === 'rgb(17, 17, 17)';
-            document.body.style.background = isDark ? '#fff' : '#111';
-            document.body.style.color = isDark ? '#111' : '#eee';
+            const body = document.body;
+            const isDark = body.style.background === 'rgb(17, 17, 17)' || body.style.background === '#111' || !body.style.background;
+            body.style.background = isDark ? '#fff' : '#111';
+            body.style.color = isDark ? '#111' : '#eee';
         }
 
-        fetch('/static/data/formatted.csv')
-          .then(response => response.text())
-          .then(data => {
-            const lines = data.trim().split('\n').slice(1);
-            const labels = lines.map(l => l.split(',')[0]);
-            const values = lines.map(l => +l.split(',')[2]);
-            const ctx = document.getElementById('illusionChart').getContext('2d');
-            new Chart(ctx, {
-              type: 'line',
-              data: {
-                labels: labels,
-                datasets: [{
-                  label: 'Perceived Interaction Value',
-                  data: values,
-                  borderColor: '#ff4081',
-                  borderWidth: 2,
-                  fill: false
-                }]
-              },
-              options: {
-                responsive: true,
-                scales: {
-                  y: {
-                    beginAtZero: true
-                  }
-                }
-              }
-            });
-          });
+        // Chart functionality
+        function updateStatus(message, type = 'warning') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = type;
+        }
 
-        // Placeholder for live reload (AJAX polling or Flask-SocketIO)
-        setInterval(() => {
-            // Future: fetch updated CSV, update chart
-        }, 60000);
+        function createChart() {
+            updateStatus('🎨 Creating visualization...', 'warning');
+            
+            try {
+                const ctx = document.getElementById('illusionChart').getContext('2d');
+                
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Reality', 'Perception', 'Memory', 'Narrative', 'Truth', 'Illusion'],
+                        datasets: [{
+                            label: 'Certainty Level (%)',
+                            data: [100, 85, 70, 50, 30, 10],
+                            borderColor: '#ff4081',
+                            backgroundColor: 'rgba(255, 64, 129, 0.1)',
+                            tension: 0.4,
+                            pointBackgroundColor: '#ff4081',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6
+                        }, {
+                            label: 'Confidence in Understanding (%)',
+                            data: [20, 40, 60, 80, 90, 95],
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            tension: 0.4,
+                            pointBackgroundColor: '#4CAF50',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'The Grande Illusion: Reality vs Perception',
+                                color: '#eee',
+                                font: { size: 16 }
+                            },
+                            legend: {
+                                labels: { 
+                                    color: '#eee',
+                                    font: { size: 12 }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Layers of Experience',
+                                    color: '#eee'
+                                },
+                                ticks: { color: '#eee' },
+                                grid: { color: '#333' }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Percentage (%)',
+                                    color: '#eee'
+                                },
+                                ticks: { color: '#eee' },
+                                grid: { color: '#333' },
+                                min: 0,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+                
+                updateStatus('✅ Visualization created successfully!', 'success');
+                
+            } catch (error) {
+                updateStatus(`❌ Chart creation failed: ${error.message}`, 'error');
+                console.error('Chart error:', error);
+            }
+        }
+
+        // Load Chart.js and create chart
+        function loadChart() {
+            const strategies = [
+                { src: '/static/chart.js', name: 'Local chart.js' },
+                { src: '/static/chart.min.js', name: 'Local chart.min.js' },
+                { src: 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js', name: 'CDN' }
+            ];
+
+            function tryNextStrategy(index = 0) {
+                if (index >= strategies.length) {
+                    updateStatus('❌ All Chart.js loading strategies failed', 'error');
+                    return;
+                }
+
+                const strategy = strategies[index];
+                updateStatus(`🔄 Trying ${strategy.name}...`, 'warning');
+
+                const script = document.createElement('script');
+                script.src = strategy.src;
+                
+                script.onload = function() {
+                    setTimeout(() => {
+                        if (typeof Chart !== 'undefined') {
+                            updateStatus(`✅ Loaded from ${strategy.name}!`, 'success');
+                            createChart();
+                        } else {
+                            updateStatus(`❌ ${strategy.name} loaded but Chart not available`, 'error');
+                            tryNextStrategy(index + 1);
+                        }
+                    }, 100);
+                };
+                
+                script.onerror = function() {     
+                    updateStatus(`❌ Failed to load from ${strategy.name}`, 'error');
+                    tryNextStrategy(index + 1);
+                };
+
+                document.head.appendChild(script);
+            }
+
+            tryNextStrategy();
+        }
+
+        window.addEventListener('load', function() {
+            setTimeout(loadChart, 100);
+        });
     </script>
 </body>
 </html>
