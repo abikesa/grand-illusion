@@ -1,0 +1,8 @@
+# Run hourly
+0 * * * * /usr/bin/python3 /path/to/engine/process.py
+
+# Append generated CSVs to master daily
+0 1 * * * /usr/bin/python3 /path/to/engine/time.py
+
+# Format master CSV daily
+5 1 * * * /usr/bin/python3 /path/to/engine/static.py

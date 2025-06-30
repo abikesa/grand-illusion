@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: grande-illusion
+    runtime: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn flask-app:app"
+    envVars:
+      - key: FLASK_ENV
+        value: production
+    plan: free
+

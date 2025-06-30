@@ -1,0 +1,26 @@
+
+stack:
+  - layer: 🌊 CSV
+    file: data/raw_data.csv
+    concept: Renoir
+    description: Raw empirical impressions of the world.
+
+  - layer: ❤️ Python
+    file: engine/process.py
+    concept: Règle
+    description: Logic and causality; structure of application behavior.
+
+  - layer: 🔁 Jinja
+    file: templates/other.html
+    concept: Du Jeu
+    description: The illusion of interface freedom; conditional rendering.
+
+  - layer: 🎭 HTML
+    file: templates/dashboard.html
+    concept: Grande
+    description: The UI mask; surface of perceived agency.
+
+  - layer: 📡 YAML
+    file: render.yaml
+    concept: Illusion
+    description: Invisible configuration schema powering everything.

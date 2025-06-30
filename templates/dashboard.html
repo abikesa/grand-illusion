@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🎭 Grande Illusion Dashboard</title>
+    <style>
+        body {
+            background: #111;
+            color: #eee;
+            font-family: sans-serif;
+            transition: background 0.5s, color 0.5s;
+        }
+        h1 { color: #ff4081; }
+        .layer {
+            margin: 20px;
+            padding: 15px;
+            background: #222;
+            border-left: 5px solid #ff4081;
+        }
+        .quote-box {
+            margin: 20px;
+            padding: 10px;
+            background: #333;
+            font-style: italic;
+            border-left: 4px solid #ccc;
+        }
+        button {
+            margin: 10px;
+            padding: 8px 12px;
+            background: #555;
+            color: #eee;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #777;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/static/script.js"></script>
+</head>
+<body>
+    <h1>🎭 The Grande Illusion</h1>
+
+    <div class="quote-box">
+        <p id="quoteText">Hover or click for wisdom 🧠</p>
+        <button onclick="nextQuote()">Next Quote</button>
+        <button onclick="toggleTheme()">Toggle Theme</button>
+    </div>
+
+    {% for item in stack %}
+    <div class="layer">
+        <h2>{{ item.layer }} {{ item.file }}</h2>
+        <p><strong>{{ item.concept }}</strong>: {{ item.description }}</p>
+    </div>
+    {% endfor %}
+
+    <canvas id="illusionChart" width="600" height="200"></canvas>
+
+    <script>
+        const quotes = {{ quotes|tojson }};
+        let index = 0;
+        const quoteEl = document.getElementById('quoteText');
+
+        function nextQuote() {
+            index = (index + 1) % quotes.length;
+            quoteEl.textContent = quotes[index];
+        }
+
+        quoteEl.addEventListener('mouseover', () => {
+            nextQuote();
+        });
+
+        function toggleTheme() {
+            const isDark = document.body.style.background === 'rgb(17, 17, 17)';
+            document.body.style.background = isDark ? '#fff' : '#111';
+            document.body.style.color = isDark ? '#111' : '#eee';
+        }
+
+        fetch('/static/data/formatted.csv')
+          .then(response => response.text())
+          .then(data => {
+            const lines = data.trim().split('\n').slice(1);
+            const labels = lines.map(l => l.split(',')[0]);
+            const values = lines.map(l => +l.split(',')[2]);
+            const ctx = document.getElementById('illusionChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: labels,
+                datasets: [{
+                  label: 'Perceived Interaction Value',
+                  data: values,
+                  borderColor: '#ff4081',
+                  borderWidth: 2,
+                  fill: false
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  y: {
+                    beginAtZero: true
+                  }
+                }
+              }
+            });
+          });
+
+        // Placeholder for live reload (AJAX polling or Flask-SocketIO)
+        setInterval(() => {
+            // Future: fetch updated CSV, update chart
+        }, 60000);
+    </script>
+</body>
+</html>
